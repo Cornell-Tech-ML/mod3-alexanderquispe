@@ -56,7 +56,7 @@ class FastOps(TensorOps):
     @staticmethod
     def zip(fn: Callable[[float, float], float]) -> Callable[[Tensor, Tensor], Tensor]:
         """See `tensor_ops.py`"""
-        f = tensor_zip(njit(fn))
+        f = tensor_map(njit(fn))
 
         def ret(a: Tensor, b: Tensor) -> Tensor:
             c_shape = shape_broadcast(a.shape, b.shape)
@@ -295,7 +295,7 @@ def tensor_reduce(
         reduce_dim: int,
     ) -> None:
         # TODO: Implement for Task 3.1.
-                for i in prange(len(out)):
+          for i in prange(len(out)):
             out_index = np.empty(len(out_shape), dtype=np.int32)
             reduce_size = a_shape[reduce_dim]
             to_index(i, out_shape, out_index)
