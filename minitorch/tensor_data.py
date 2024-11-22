@@ -44,7 +44,17 @@ def index_to_position(index: Index, strides: Strides) -> int:
         Position in storage
 
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 2.1.
+    # Initialize position to 0
+    position = 0
+
+    # Zip together index and strides, and iterate over them
+    for idx, stride in zip(index, strides):
+        # Multiply each index element by its corresponding stride and add it to the position
+        position += idx * stride
+    
+    # Return the calculated position in 1D storage
+    return position
 
 
 def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
@@ -59,7 +69,17 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
         out_index : return index corresponding to position.
 
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 2.1.
+    # Initialize the running ordinal
+    running_ordinal = ordinal + 0
+
+    # Loop over the shape in reverse to compute indices for each dimension
+    for i in range(len(shape) - 1, -1, -1):
+        # Calculate the index for the current dimension
+        out_index[i] = running_ordinal % shape[i]
+        
+        # Update the ordinal for the next dimension
+        running_ordinal //= shape[i]
 
 
 def broadcast_index(
@@ -81,7 +101,15 @@ def broadcast_index(
         None
 
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 2.2.
+    for i, s in enumerate(shape):
+        if s > 1:
+            out_index[i] = big_index[i + (len(big_shape) - len(shape))]
+        else:
+            out_index[i] = 0
+    return None
+    # END ASSIGN2.2
+
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -98,7 +126,33 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
 
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 2.2.
+    # Reverse the shapes to start comparing from the last dimension
+    reversed_shape1 = shape1[::-1]
+    reversed_shape2 = shape2[::-1]
+
+    # Determine the length of the resulting broadcasted shape
+    max_len = max(len(shape1), len(shape2))
+
+    # Initialize the result shape
+    broadcasted_shape = []
+
+    # Compare dimensions from the rightmost side (i.e., reversed shapes)
+    for i in range(max_len):
+        # Get the dimensions for this index (or 1 if beyond the shape length)
+        dim1 = reversed_shape1[i] if i < len(reversed_shape1) else 1
+        dim2 = reversed_shape2[i] if i < len(reversed_shape2) else 1
+
+        # Check if broadcasting is possible
+        if dim1 == dim2 or dim1 == 1 or dim2 == 1:
+            # Append the larger of the two dimensions
+            broadcasted_shape.append(max(dim1, dim2))
+        else:
+            # If the dimensions are incompatible, raise an error
+            raise IndexingError(f"Cannot broadcast shapes {shape1} and {shape2}")
+
+    # Reverse the result back to the original order (since we started from the right)
+    return tuple(broadcasted_shape[::-1])
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
@@ -221,13 +275,20 @@ class TensorData:
 
         Returns:
             New `TensorData` with the same storage and a new dimension order.
-
         """
         assert list(sorted(order)) == list(
             range(len(self.shape))
         ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
 
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # Permute the shape
+        new_shape = tuple(self.shape[i] for i in order)
+
+        # Permute the strides
+        new_strides = tuple(self.strides[i] for i in order)
+
+        # Return a new TensorData object with the same storage and the new permuted shape/strides
+        return TensorData(self._storage, new_shape, new_strides)
+
 
     def to_string(self) -> str:
         """Convert to string"""

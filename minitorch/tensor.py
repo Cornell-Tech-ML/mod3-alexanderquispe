@@ -282,6 +282,91 @@ class Tensor:
 
         """
         return self._tensor.shape
+    
+    @property
+    def size(self) -> int:
+        """Returns the total number of elements in the tensor."""
+        return int(np.prod(self.shape))
 
     # Functions
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 2.3.
+
+    def __add__(self, b: TensorLike) -> Tensor:
+        return Add.apply(self, self._ensure_tensor(b))
+
+    def __sub__(self, b: TensorLike) -> Tensor:
+        return Add.apply(self, Neg.apply(self._ensure_tensor(b)))
+
+    def __mul__(self, b: TensorLike) -> Tensor:
+        return Mul.apply(self, self._ensure_tensor(b))
+
+    def __lt__(self, b: TensorLike) -> Tensor:
+        return LT.apply(self, self._ensure_tensor(b))
+
+    def __eq__(self, b: TensorLike) -> Tensor:
+        return EQ.apply(self, self._ensure_tensor(b))
+
+    def __gt__(self, b: TensorLike) -> Tensor:
+        return LT.apply(self._ensure_tensor(b), self)
+
+    def __neg__(self) -> Tensor:
+        return Neg.apply(self)
+
+    def __radd__(self, b: TensorLike) -> Tensor:
+        return Add.apply(self._ensure_tensor(b), self)
+
+    def __rmul__(self, b: TensorLike) -> Tensor:
+        return Mul.apply(self._ensure_tensor(b), self)
+
+    def all(self, dim: Optional[TensorLike] = None) -> Tensor:
+        """Return 1 if all are true"""
+        if dim is not None:
+            return All.apply(self, self._ensure_tensor(dim))
+        else:
+            return All.apply(self.view(self.size), self._ensure_tensor(0))
+
+    def is_close(self, b: TensorLike) -> Tensor:
+        r"""Return 1 if tensor elements are close to its corresponding elements in b"""
+        return IsClose.apply(self, self._ensure_tensor(b))
+
+    def sigmoid(self) -> Tensor:
+        r"""Sigmoid function $f(x) = 1 / (1 + \exp(-x))$"""
+        return Sigmoid.apply(self)
+
+    def relu(self) -> Tensor:
+        r"""ReLU function $f(x) = \max(0, x)$"""
+        return ReLU.apply(self)
+
+    def log(self) -> Tensor:
+        r"""Logarithm function $f(x) = \log(x)$"""
+        return Log.apply(self)
+
+    def exp(self) -> Tensor:
+        """Exponential function $f(x) = e^x$"""
+        return Exp.apply(self)
+
+    def sum(self, dim: Optional[TensorLike] = None) -> Tensor:
+        """Sum the tensor along a specific dimension, or all dimensions if dim is None."""
+        if dim is not None:
+            return Sum.apply(self, self._ensure_tensor(dim))
+
+        return Sum.apply(self.contiguous().view(self.size), self._ensure_tensor(0))
+
+    def view(self, *dim: TensorLike) -> Tensor:
+        """Reshape the tensor to the given shape."""
+        return View.apply(self, tensor(dim))
+
+    def permute(self, *dim: TensorLike) -> Tensor:
+        """Permutes the tensor with the order of given dims"""
+        return Permute.apply(self, tensor(dim))
+
+    def mean(self, dim: Optional[TensorLike] = None) -> Tensor:
+        """Calculate the mean of the tensor"""
+        if dim is None:
+            return self.sum() / self.size
+        else:
+            return self.sum(dim) / int(self.shape[int(self._ensure_tensor(dim).item())])
+
+    def zero_grad_(self) -> None:
+        """Set the gradient of the tensor to None"""
+        self.grad = None

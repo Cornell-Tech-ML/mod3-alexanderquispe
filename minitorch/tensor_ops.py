@@ -248,7 +248,7 @@ def tensor_map(
     Args:
         fn: function from float-to-float to apply
 
-    Returns:
+    Returns:    
         Tensor map function.
 
     """
@@ -261,7 +261,16 @@ def tensor_map(
         in_shape: Shape,
         in_strides: Strides,
     ) -> None:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 2.3.
+        out_index: Index = np.zeros(MAX_DIMS, np.int16)
+        in_index: Index = np.zeros(MAX_DIMS, np.int16)
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            broadcast_index(out_index, out_shape, in_shape, in_index)
+            o = index_to_position(out_index, out_strides)
+            j = index_to_position(in_index, in_strides)
+            out[o] = fn(in_storage[j])
+        # END ASSIGN2.2
 
     return _map
 
@@ -305,7 +314,28 @@ def tensor_zip(
         b_shape: Shape,
         b_strides: Strides,
     ) -> None:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 2.3.
+        # Initialize indices for output, a, and b
+        out_index = np.zeros(MAX_DIMS, np.int32)
+        a_index = np.zeros(MAX_DIMS, np.int32)
+        b_index = np.zeros(MAX_DIMS, np.int32)
+
+        # Loop over every element in the output tensor
+        for i in range(len(out)):
+            # Convert flat index to multi-dimensional index for the output tensor
+            to_index(i, out_shape, out_index)
+            
+            # Broadcast multi-dimensional index for a and b
+            broadcast_index(out_index, out_shape, a_shape, a_index)
+            broadcast_index(out_index, out_shape, b_shape, b_index)
+            
+            # Convert multi-dimensional indices to flat indices (positions)
+            out_pos = index_to_position(out_index, out_strides)
+            a_pos = index_to_position(a_index, a_strides)
+            b_pos = index_to_position(b_index, b_strides)
+            
+            # Apply the function to the values from a_storage and b_storage and store the result
+            out[out_pos] = fn(a_storage[a_pos], b_storage[b_pos])
 
     return _zip
 
@@ -335,7 +365,38 @@ def tensor_reduce(
         a_strides: Strides,
         reduce_dim: int,
     ) -> None:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 2.3.
+        # Initialize indices for output and input tensors
+        out_index = np.zeros(MAX_DIMS, np.int16)
+        a_index = np.zeros(MAX_DIMS, np.int16)
+        
+        # Loop over every element in the output tensor
+        for i in range(len(out)):
+            # Convert flat index to multi-dimensional index for the output tensor
+            to_index(i, out_shape, out_index)
+            
+            # Initialize the reduction accumulator with a starting value
+            out_pos = index_to_position(out_index, out_strides)
+            result = None  # We will reduce the elements along `reduce_dim`
+            
+            # For each element along `reduce_dim` in the input tensor
+            for j in range(a_shape[reduce_dim]):
+                # Copy the output index into the input index
+                a_index[:] = out_index[:]
+                # Adjust the index along `reduce_dim`
+                a_index[reduce_dim] = j
+                
+                # Get the position in the input storage
+                a_pos = index_to_position(a_index, a_strides)
+                
+                # Apply the reduction function
+                if result is None:
+                    result = a_storage[a_pos]  # First element initializes the result
+                else:
+                    result = fn(result, a_storage[a_pos])  # Apply the reduction function
+
+            # Store the reduced value in the output tensor
+            out[out_pos] = result
 
     return _reduce
 
