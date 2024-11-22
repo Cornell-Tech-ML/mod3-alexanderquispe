@@ -35,3 +35,11 @@ The files that will be synced are:
 # GPU - split 
 
 ![image](https://github.com/user-attachments/assets/e0a783b6-0884-4c50-8d60-1343787bea8d)
+
+# GPU - xor
+![image](https://github.com/user-attachments/assets/5f11e6ef-6910-41fb-b055-163eadf6a799)
+
+
+# GPUT - simple 
+
+
